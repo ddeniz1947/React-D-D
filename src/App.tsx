@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Column from "./components/Column";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { styled } from "./stiches.config";
+import axios from "axios";
 
 const StyledColumns = styled("div", {
   display: "grid",
@@ -21,31 +22,39 @@ const finalSpaceCharacters = [
   },
 ];
 
-const dayExample =[''];
+const dayExample = [""];
+
 function App() {
+ var denemeArray = [""];
   const [characters, updateCharacters] = useState(finalSpaceCharacters);
 
-  const [todoData, settodoData] = useState<any['']>(finalSpaceCharacters);
-  const [pazartesi, setPazartesi] = useState([]);
+  const [todoData, settodoData] = useState<any[""]>(finalSpaceCharacters);
+  const [pazartesi, setPazartesi] = useState([""]);
 
   const [newNameParameter, setNewNameParameter] = useState("");
   const [newDescriptionParameter, setNewDescriptionParameter] = useState("");
   const [newDayParameter, setnewDayParameter] = useState("");
 
   useEffect(() => {
-    fetchDataJSON();
+  
+    axios
+      .get("http://localhost:8081/list")
+      .then((response) => {
+        for (let i = 0; i < response.data.length; i++) {
+          setPazartesi(pazartesi.concat(response.data[3].name.toString()));
+          denemeArray.push(response.data[i].name)
+          console.log(denemeArray);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        console.log(pazartesi);
+      });
+      
+      denemeArray.shift();
   }, []);
-
-
-    
-  async function fetchDataJSON() {
-    const response = await fetch("http://localhost:8081/list");
-    const data = await response.json();
-    for (let i =0 ; i<data.length;i++){
-      setPazartesi(pazartesi.concat(data[i].name));
-    }
-    return data;
-  }
 
   function SendData() {
     fetch("http://localhost:8081/", {
@@ -66,46 +75,10 @@ function App() {
       .finally(function () {});
   }
 
-  function getPazartesi(){
-    const initialColumns = {
-
-      Pazartesi: {
-        id: "Pazartesi",
-        list: pazartesi,
-      },
-      Salı: {
-        id: "Salı",
-        list: [],
-      },
-      Çarşamba: {
-        id: "Çarşamba",
-        list: ["item 4", "item 5", "item 6"],
-      },
-      Perşembe: {
-        id: "Perşembe",
-        list: ["item 7", "item 8", "item 9"],
-      },
-      Cuma: {
-        id: "Cuma",
-        list: [],
-      },
-      Cumartesi: {
-        id: "Cumartesi",
-        list: ["item 10", "item 11", "item 12"],
-      },
-      Pazar: {
-        id: "Pazar",
-        list: ["item 13", "item 14", "item 15"],
-      },
-    };
-    return pazartesi;
-  }
-
   const initialColumns = {
-
     Pazartesi: {
       id: "Pazartesi",
-      list: pazartesi,
+      list: denemeArray,
     },
     Salı: {
       id: "Salı",
@@ -206,60 +179,41 @@ function App() {
   };
 
   return (
- {pazartesi} ?
- <div>
-      
- <div className="firstRow">
-   <input
-     onChange={(e) => setNewNameParameter(e.target.value)}
-     type="text"
-   />
-   <input
-     onChange={(e) => setNewDescriptionParameter(e.target.value)}
-     type="text"
-   />
-   <input
-     onChange={(e) => setnewDayParameter(e.target.value)}
-     type="text"
-   />
-   <button onClick={SendData}>Post Data</button>
- </div>
- <DragDropContext onDragEnd={onDragEnd}>
-   <StyledColumns>
-     {Object.values(columns).map((col) => (
-       <Column col={col} key={col.id} />
-     ))}
-   </StyledColumns>
- </DragDropContext>
-</div>
-:
-<div>
-      
-<div className="firstRow">
-  <input
-    onChange={(e) => setNewNameParameter(e.target.value)}
-    type="text"
-  />
-  <input
-    onChange={(e) => setNewDescriptionParameter(e.target.value)}
-    type="text"
-  />
-  <input
-    onChange={(e) => setnewDayParameter(e.target.value)}
-    type="text"
-  />
-  <button onClick={SendData}>Post Data</button>
-</div>
-<DragDropContext onDragEnd={onDragEnd}>
-  <StyledColumns>
-    {Object.values(columns).map((col) => (
-      <Column col={col} key={col.id} />
-    ))}
-  </StyledColumns>
-</DragDropContext>
-</div>
-   
+    <div>
+      <div className="firstRow">
+        <input
+          onChange={(e) => setNewNameParameter(e.target.value)}
+          type="text"
+        />
+        <input
+          onChange={(e) => setNewDescriptionParameter(e.target.value)}
+          type="text"
+        />
+        <input
+          onChange={(e) => setnewDayParameter(e.target.value)}
+          type="text"
+        />
+        <button onClick={SendData}>Post Data</button>
+      </div>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <StyledColumns>
+          {Object.values(columns).map((col) => (
+            <Column col={col} key={col.id} />
+          ))}
+        </StyledColumns>
+      </DragDropContext>
+    </div>
   );
 }
 
 export default App;
+
+//ASENKRON FETCH
+// async function fetchDataJSON() {
+//   const response = await fetch("http://localhost:8081/list");
+//   const data = await response.json();
+//   for (let i =0 ; i<data.length;i++){
+//     setPazartesi(pazartesi.concat(data[i].name));
+//   }
+//   return data;
+// }
